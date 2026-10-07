@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "CoreHa",
+    "slug": "coreha-customer",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#f5f7f3"
+    },
+    "ios": {
+      "bundleIdentifier": "com.coreha.customer",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.coreha.customer",
+      "adaptiveIcon": {
+        "backgroundColor": "#f5f7f3",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
