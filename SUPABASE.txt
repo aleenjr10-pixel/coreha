@@ -1,2 +1,0 @@
-SUPABASE
-coreha = faufsz7ZNqTaPkra
