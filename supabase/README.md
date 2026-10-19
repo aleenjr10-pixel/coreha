@@ -1,31 +1,39 @@
 # Supabase setup
 
-This folder contains the initial database schema for CoreHa.
+The whole database is defined in one script: [`schema.sql`](schema.sql).
 
-## Apply the schema
+## Apply or update the database
 
-Run the contents of `schema.sql` in the Supabase SQL editor or with the Supabase CLI.
+Open the Supabase SQL editor, paste the full contents of `schema.sql`, and run it.
+
+- Works on a **new** project and on an **existing** one.
+- Safe to run **again at any time**: it never drops tables or data. It creates what is missing and replaces functions, triggers, and access policies with the current versions.
+- Runs in a single transaction, so it either applies completely or not at all.
+
+To change the database, edit `schema.sql` (keep every statement re-runnable: `if not exists`, `create or replace`, `drop ... if exists` before `create`) and run it again.
+
+The files in [`archive/`](archive/) are the step-by-step migrations used before the single script. They are kept for history only; do not run them.
 
 ## Roles
 
-The application uses two primary roles:
+- `customer`: restaurant users (mobile app) who manage their restaurant, equipment, cleaning requests, and consultation requests
+- `admin`: CoreHa staff (admin website) who manage inventory, requests, suppliers, quote requests, and offer analysis
 
-- `customer`: restaurant users who manage their restaurant, equipment, alerts, and consultation requests
-- `admin`: CoreHa staff who manage inventory, leads, supplier requests, and offer analysis
+Only admins can change roles. New sign-ups always get the `customer` role.
 
-## Notes
+## First admin
 
-- The `profiles` table is linked to `auth.users`.
-- New users inserted into `auth.users` automatically create a matching row in `public.profiles`.
-- Restaurant ownership is handled via `restaurants.owner_id` and membership is tracked in `restaurant_members`.
-- RLS is enabled for all key tables so customer and admin access are segregated by role and restaurant membership.
-
-## Suggested first admin setup
-
-Create a user in Supabase Auth and then update their profile role to `admin`:
+Create a user in Supabase Auth, then run this in the SQL editor:
 
 ```sql
 update public.profiles
 set role = 'admin'
 where email = 'your-admin@email.com';
 ```
+
+## Notes
+
+- `profiles` is linked to `auth.users`; a profile is created automatically for every new user.
+- A restaurant's owner is added to `restaurant_members` automatically; access checks use membership.
+- Row Level Security is enabled on every table. Customers only see their own restaurant's data; suppliers and quote recipients are admin-only.
+- Consultation photos are stored in the private `consultation-photos` bucket under `<restaurant_id>/`.

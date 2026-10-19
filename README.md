@@ -44,4 +44,4 @@ Use Expo Go to open the mobile project on a physical device or in an emulator. T
 
 The admin site uses VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in apps/admin-web/.env.local. The Expo app uses EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY in apps/customer-mobile/.env. Both apps should connect to the same Supabase project. Only the public publishable key belongs in the client apps; never store a service-role or secret key there.
 
-No live database migration is defined yet. The schema and Row Level Security policies must be redesigned for the customer/admin split before enabling real data access.
+The database (tables, access policies, functions, storage) is defined in a single re-runnable script, [supabase/schema.sql](supabase/schema.sql). See [supabase/README.md](supabase/README.md).
