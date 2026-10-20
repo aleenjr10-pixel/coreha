@@ -223,3 +223,5 @@ const styles = StyleSheet.create({
   modeButtonText: { color: colors.green, fontWeight: '600', fontSize: 13 },
   footerText: { marginTop: 18, color: colors.textMuted, fontSize: 12, lineHeight: 19, textAlign: 'center' },
 });
+
+export { ScreenErrorBoundary as ErrorBoundary } from '../components/ScreenErrorBoundary';

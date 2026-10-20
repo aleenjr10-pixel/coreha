@@ -69,3 +69,5 @@ export default function ReportsScreen() {
     </Screen>
   );
 }
+
+export { ScreenErrorBoundary as ErrorBoundary } from '../../components/ScreenErrorBoundary';

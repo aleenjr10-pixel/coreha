@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { AlertTriangle, ClipboardList, Pencil, Sparkles } from 'lucide-react-native';
@@ -13,6 +13,7 @@ import {
   type OpenAlert,
   type Tone,
 } from '../../lib/equipment';
+import { onAlertReceived } from '../../lib/push';
 import { useRestaurant } from '../../lib/session';
 import { errorMessage, requireSupabase } from '../../lib/supabase';
 import { categoryLabels, colors, formatDate } from '../../lib/theme';
@@ -44,6 +45,10 @@ export default function EquipmentScreen() {
     if (error) throw error;
     return [...data].sort(compareByDueDate);
   }, [restaurant.id]);
+
+  // A new alert arriving while the app is open shows up without pulling to refresh.
+  const { reload } = equipment;
+  useEffect(() => onAlertReceived(reload), [reload]);
 
   if (equipment.loading) return <LoadingView />;
 
@@ -196,3 +201,5 @@ const local = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+export { ScreenErrorBoundary as ErrorBoundary } from '../../components/ScreenErrorBoundary';

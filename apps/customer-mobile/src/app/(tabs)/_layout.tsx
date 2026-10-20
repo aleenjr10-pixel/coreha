@@ -26,3 +26,5 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
+
+export { ScreenErrorBoundary as ErrorBoundary } from '../../components/ScreenErrorBoundary';

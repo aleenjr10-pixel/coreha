@@ -231,7 +231,7 @@ function QuoteForm({ lead, suppliers }: { lead: LeadForQuote; suppliers: Supplie
           )}
           <div className="rfq-actions">
             <button className="admin-secondary-button" type="button" onClick={copyText}><Copy size={14} /> Copy text</button>
-            <button className="admin-primary-button" type="button" onClick={save} disabled={!canSave}>
+            <button className="admin-primary-button" type="button" onClick={save} disabled={!canSave} aria-busy={saving}>
               <Mail size={14} /> {saving ? 'Saving…' : 'Save & open email'}
             </button>
           </div>

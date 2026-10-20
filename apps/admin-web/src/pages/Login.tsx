@@ -53,7 +53,7 @@ export function Login() {
               <label>Email<input type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} /></label>
               <label>Password<input type="password" required autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} /></label>
               {error && <div className="login-error">{error}</div>}
-              <button className="admin-primary-button login-submit" type="submit" disabled={submitting || !supabaseConfigured}>
+              <button className="admin-primary-button login-submit" type="submit" disabled={submitting || !supabaseConfigured} aria-busy={submitting}>
                 {submitting ? 'Signing in…' : 'Sign in'}
               </button>
             </form>

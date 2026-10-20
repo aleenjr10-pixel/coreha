@@ -11,6 +11,19 @@ begin;
 
 create extension if not exists pgcrypto;
 
+-- pg_net sends push notifications over HTTP; pg_cron runs the daily due-date check.
+-- Both ship with Supabase; they are skipped where unavailable (e.g. a plain local Postgres).
+do $$
+begin
+  if exists (select 1 from pg_available_extensions where name = 'pg_net') then
+    create extension if not exists pg_net with schema extensions;
+  end if;
+  if exists (select 1 from pg_available_extensions where name = 'pg_cron') then
+    create extension if not exists pg_cron;
+  end if;
+end;
+$$;
+
 -- Types ----------------------------------------------------------------------------
 
 do $$ begin
@@ -278,7 +291,21 @@ create table if not exists public.alert_events (
   acknowledged_at timestamptz,
   scheduled_for timestamptz,
   responded_by uuid references public.profiles(id) on delete set null,
+  -- Push delivery log: devices reached on the last send, when, how often, and any error.
+  push_device_count integer not null default 0,
+  push_sent_at timestamptz,
+  push_attempts integer not null default 0,
+  push_error text,
   created_at timestamptz not null default now()
+);
+
+-- Expo push tokens of the phones signed in to the mobile app.
+create table if not exists public.push_tokens (
+  token text primary key,
+  profile_id uuid not null references public.profiles(id) on delete cascade,
+  platform text check (platform in ('ios', 'android')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 -- Consultation requests (module 2) ----------------------------------------------------
@@ -422,7 +449,11 @@ create table if not exists public.notifications (
 
 alter table public.alert_events
   add column if not exists scheduled_for timestamptz,
-  add column if not exists responded_by uuid references public.profiles(id) on delete set null;
+  add column if not exists responded_by uuid references public.profiles(id) on delete set null,
+  add column if not exists push_device_count integer not null default 0,
+  add column if not exists push_sent_at timestamptz,
+  add column if not exists push_attempts integer not null default 0,
+  add column if not exists push_error text;
 
 alter table public.supplier_quote_requests
   add column if not exists title text,
@@ -693,6 +724,192 @@ grant execute on function public.create_consultation_request(uuid, jsonb) to aut
 revoke all on function public.create_supplier_quote_request(uuid, uuid[], uuid[], text, text, date) from public, anon;
 grant execute on function public.create_supplier_quote_request(uuid, uuid[], uuid[], text, text, date) to authenticated;
 
+-- Push notifications and automatic alerts ---------------------------------------------
+
+-- Mobile: remember this phone for the signed-in user (a phone moves to whoever signs in).
+create or replace function public.register_push_token(p_token text, p_platform text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'Sign in to enable notifications';
+  end if;
+
+  if p_token !~ '^Expo(nent)?PushToken\[.+\]$' then
+    raise exception 'Invalid push token';
+  end if;
+
+  insert into public.push_tokens (token, profile_id, platform)
+  values (p_token, auth.uid(), nullif(p_platform, ''))
+  on conflict (token) do update
+  set profile_id = excluded.profile_id,
+      platform = excluded.platform,
+      updated_at = now();
+end;
+$$;
+
+-- Mobile: forget this phone on sign-out.
+create or replace function public.unregister_push_token(p_token text)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  delete from public.push_tokens where token = p_token and profile_id = auth.uid();
+$$;
+
+-- Sends the alert to every phone of the restaurant's members through the Expo push service.
+-- A push failure never blocks the alert itself: the error is logged on the alert.
+create or replace function public.send_alert_push(p_alert_id uuid)
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_alert public.alert_events;
+  v_label text;
+  v_tokens text[];
+  v_count integer;
+  v_offset integer := 1;
+begin
+  if auth.uid() is not null and not public.is_admin() then
+    raise exception 'Only administrators can send alerts';
+  end if;
+
+  select * into v_alert from public.alert_events where id = p_alert_id;
+  if v_alert.id is null then
+    raise exception 'Alert not found';
+  end if;
+
+  select label into v_label from public.equipment_items where id = v_alert.equipment_item_id;
+
+  select array_agg(distinct pt.token) into v_tokens
+  from public.push_tokens pt
+  join public.restaurant_members rm on rm.profile_id = pt.profile_id
+  where rm.restaurant_id = v_alert.restaurant_id;
+
+  v_count := coalesce(array_length(v_tokens, 1), 0);
+
+  if v_count = 0 then
+    update public.alert_events
+    set push_device_count = 0, push_attempts = push_attempts + 1, push_error = 'No phone registered'
+    where id = p_alert_id;
+    return 0;
+  end if;
+
+  begin
+    -- The Expo push API accepts at most 100 messages per request.
+    while v_offset <= v_count loop
+      perform net.http_post(
+        url := 'https://exp.host/--/api/v2/push/send',
+        body := (
+          select jsonb_agg(jsonb_build_object(
+            'to', token,
+            'title', 'Maintenance required: ' || coalesce(v_label, 'equipment'),
+            'body', v_alert.alert_message,
+            'data', jsonb_build_object('type', 'maintenance_alert', 'alertId', v_alert.id, 'equipmentId', v_alert.equipment_item_id),
+            'priority', 'high',
+            'channelId', 'critical-alerts',
+            'sound', 'default',
+            'interruptionLevel', 'time-sensitive',
+            'ttl', 86400
+          ))
+          from unnest(v_tokens[v_offset:v_offset + 99]) as token
+        ),
+        headers := jsonb_build_object('Content-Type', 'application/json', 'Accept', 'application/json')
+      );
+      v_offset := v_offset + 100;
+    end loop;
+
+    update public.alert_events
+    set push_device_count = v_count, push_sent_at = now(), push_attempts = push_attempts + 1, push_error = null
+    where id = p_alert_id;
+  exception when others then
+    update public.alert_events
+    set push_device_count = 0, push_attempts = push_attempts + 1, push_error = left(sqlerrm, 300)
+    where id = p_alert_id;
+    v_count := 0;
+  end;
+
+  return v_count;
+end;
+$$;
+
+-- Every new maintenance alert goes straight to the restaurant's phones.
+create or replace function public.handle_new_alert()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.send_alert_push(new.id);
+  return new;
+end;
+$$;
+
+drop trigger if exists on_alert_created on public.alert_events;
+create trigger on_alert_created
+after insert on public.alert_events
+for each row
+when (new.status = 'sent')
+execute procedure public.handle_new_alert();
+
+-- Daily check (pg_cron, and the admin's "Run check now"): creates an alert for every active
+-- machine due today or overdue that has no open alert, and re-sends the push for alerts
+-- still unanswered after a day, so a critical alert keeps coming back until it is handled.
+create or replace function public.generate_due_alerts()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_created integer;
+  v_renotified integer := 0;
+  v_alert record;
+begin
+  if auth.uid() is not null and not public.is_admin() then
+    raise exception 'Only administrators can run the due-date check';
+  end if;
+
+  insert into public.alert_events (restaurant_id, equipment_item_id, alert_message)
+  select e.restaurant_id, e.id, 'Equipment ' || e.label || ' requires periodic maintenance.'
+  from public.equipment_items e
+  where e.status = 'active'
+    and e.next_due_at < date_trunc('day', now()) + interval '1 day'
+    and not exists (
+      select 1 from public.alert_events a
+      where a.equipment_item_id = e.id and a.status <> 'resolved'
+    );
+  get diagnostics v_created = row_count;
+
+  for v_alert in
+    select id from public.alert_events
+    where status = 'sent'
+      and coalesce(push_sent_at, delivered_at) < now() - interval '20 hours'
+  loop
+    perform public.send_alert_push(v_alert.id);
+    v_renotified := v_renotified + 1;
+  end loop;
+
+  return jsonb_build_object('created', v_created, 'renotified', v_renotified);
+end;
+$$;
+
+revoke all on function public.register_push_token(text, text) from public, anon;
+grant execute on function public.register_push_token(text, text) to authenticated;
+revoke all on function public.unregister_push_token(text) from public, anon;
+grant execute on function public.unregister_push_token(text) to authenticated;
+revoke all on function public.send_alert_push(uuid) from public, anon;
+grant execute on function public.send_alert_push(uuid) to authenticated;
+revoke all on function public.generate_due_alerts() from public, anon;
+grant execute on function public.generate_due_alerts() to authenticated;
+
 -- Row level security -------------------------------------------------------------------
 -- One policy per table and command. Calls that do not depend on the row are wrapped in
 -- (select ...) so Postgres evaluates them once per query instead of once per row.
@@ -710,6 +927,7 @@ alter table public.supplier_quote_recipients enable row level security;
 alter table public.supplier_offers enable row level security;
 alter table public.comparison_reports enable row level security;
 alter table public.notifications enable row level security;
+alter table public.push_tokens enable row level security;
 
 -- Existing policies are removed first so this file is the only source of truth.
 do $$
@@ -723,7 +941,8 @@ begin
       and tablename in (
         'profiles', 'restaurants', 'restaurant_members', 'equipment_items', 'alert_events',
         'consultation_leads', 'consultation_lead_items', 'suppliers', 'supplier_quote_requests',
-        'supplier_quote_recipients', 'supplier_offers', 'comparison_reports', 'notifications'
+        'supplier_quote_recipients', 'supplier_offers', 'comparison_reports', 'notifications',
+        'push_tokens'
       )
   loop
     execute format('drop policy %I on public.%I', v_policy.policyname, v_policy.tablename);
@@ -871,6 +1090,10 @@ using ((select public.is_admin()) or user_id = (select auth.uid()) or public.is_
 create policy "Notifications: admin creates" on public.notifications for insert
 with check ((select public.is_admin()));
 
+-- push_tokens: written only through register_push_token / unregister_push_token
+create policy "Push tokens: read own or admin" on public.push_tokens for select
+using (profile_id = (select auth.uid()) or (select public.is_admin()));
+
 -- Indexes -------------------------------------------------------------------------------
 
 create index if not exists idx_profiles_role on public.profiles (role);
@@ -890,6 +1113,8 @@ create index if not exists idx_offers_quote on public.supplier_offers (quote_req
 create index if not exists idx_reports_quote on public.comparison_reports (quote_request_id);
 create index if not exists idx_notifications_restaurant on public.notifications (restaurant_id);
 create index if not exists idx_notifications_user on public.notifications (user_id);
+create index if not exists idx_push_tokens_profile on public.push_tokens (profile_id);
+create index if not exists idx_alerts_open on public.alert_events (equipment_item_id) where status <> 'resolved';
 
 -- Storage: photos of the installation space ---------------------------------------------
 -- Private bucket; files live under <restaurant_id>/.
@@ -929,5 +1154,15 @@ using (
     )
   )
 );
+
+-- Daily due-date check at 06:00 UTC (09:00 in Romania in summer, 08:00 in winter).
+-- Scheduling under the same name replaces the existing job.
+do $$
+begin
+  if exists (select 1 from pg_extension where extname = 'pg_cron') then
+    perform cron.schedule('coreha-due-alerts', '0 6 * * *', 'select public.generate_due_alerts()');
+  end if;
+end;
+$$;
 
 commit;

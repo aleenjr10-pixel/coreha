@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "624933624988",
+    "project_id": "coreha-10489",
+    "storage_bucket": "coreha-10489.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:624933624988:android:14ff0658d0ea36822ce159",
+        "android_client_info": {
+          "package_name": "com.coreha.customer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmqPgJbUT4RgyQAzxF871LFoHP_mT9Q6M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

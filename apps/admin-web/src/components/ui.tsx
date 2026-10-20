@@ -62,7 +62,7 @@ export function Modal({
           {children}
           <div className="admin-modal-actions">
             <button type="button" className="admin-secondary-button" onClick={onClose} disabled={submitting}>Cancel</button>
-            <button type="submit" className="admin-primary-button" disabled={submitting}>{submitting ? 'Saving…' : submitLabel}</button>
+            <button type="submit" className="admin-primary-button" disabled={submitting} aria-busy={submitting}>{submitting ? 'Saving…' : submitLabel}</button>
           </div>
         </form>
       </section>

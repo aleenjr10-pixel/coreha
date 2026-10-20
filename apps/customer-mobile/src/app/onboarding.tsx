@@ -76,3 +76,5 @@ export default function OnboardingScreen() {
     </KeyboardAvoidingView>
   );
 }
+
+export { ScreenErrorBoundary as ErrorBoundary } from '../components/ScreenErrorBoundary';

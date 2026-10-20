@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
+import { unregisterPush } from './push';
 import { errorMessage, supabase } from './supabase';
 import type { Restaurant } from './types';
 
@@ -96,6 +97,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     if (!supabase) return;
+    await unregisterPush();
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
   }, []);

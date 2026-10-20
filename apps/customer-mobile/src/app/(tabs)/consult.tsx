@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { Image, KeyboardAvoidingView, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { File } from 'expo-file-system';
-import * as ImagePicker from 'expo-image-picker';
 import { Camera, CheckCircle2, ImagePlus, Phone, Plus, Trash2, X } from 'lucide-react-native';
 import { Select } from '../../components/Select';
 import { Badge, Button, Card, Chip, ErrorText, FieldLabel, Input, Screen, SectionTitle, styles } from '../../components/ui';
 import { consultCategories, findCategory, findType, supplyLabels } from '../../lib/consultCatalog';
+import { photosAvailable, pickPhoto as pickPhotoFrom, readPhotoBytes, type Photo } from '../../lib/photos';
 import { useRestaurant } from '../../lib/session';
 import { errorMessage, requireSupabase } from '../../lib/supabase';
 import { colors, formatDate } from '../../lib/theme';
@@ -22,8 +21,6 @@ const leadBadge: Record<LeadStatus, { label: string; tone: 'neutral' | 'good' | 
   quote_requested: { label: 'Colectăm oferte', tone: 'good' },
   closed: { label: 'Închisă', tone: 'neutral' },
 };
-
-type Photo = { uri: string; mimeType: string };
 
 type DraftItem = {
   key: string;
@@ -99,9 +96,7 @@ export default function ConsultScreen() {
   async function uploadPhoto(photo: Photo) {
     const extension = photo.mimeType === 'image/png' ? 'png' : 'jpg';
     const path = `${restaurant.id}/${randomId()}.${extension}`;
-    // fetch(uri).arrayBuffer() can return an empty buffer for local files in React Native.
-    const body = await new File(photo.uri).bytes();
-    if (body.byteLength === 0) throw new Error('Poza nu a putut fi citită. Încearcă să o alegi din nou.');
+    const body = await readPhotoBytes(photo);
     const { error: uploadError } = await requireSupabase()
       .storage.from('consultation-photos')
       .upload(path, body, { contentType: photo.mimeType });
@@ -265,17 +260,8 @@ function ItemForm({
   async function pickPhoto(source: 'camera' | 'library') {
     onError(null);
     try {
-      if (source === 'camera') {
-        const permission = await ImagePicker.requestCameraPermissionsAsync();
-        if (!permission.granted) {
-          onError('Permite accesul la cameră din setările telefonului pentru a face o poză.');
-          return;
-        }
-      }
-      const options: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 0.6 };
-      const result = source === 'camera' ? await ImagePicker.launchCameraAsync(options) : await ImagePicker.launchImageLibraryAsync(options);
-      const asset = result.canceled ? null : result.assets[0];
-      if (asset) onChange({ photo: { uri: asset.uri, mimeType: asset.mimeType ?? 'image/jpeg' } });
+      const photo = await pickPhotoFrom(source);
+      if (photo) onChange({ photo });
     } catch (err) {
       onError(errorMessage(err, 'Nu am putut încărca poza.'));
     }
@@ -373,6 +359,8 @@ function ItemForm({
                 <X size={16} color="#ffffff" />
               </Pressable>
             </View>
+          ) : !photosAvailable() ? (
+            <Text style={local.photoHint}>Adăugarea pozelor nu este disponibilă în această versiune a aplicației.</Text>
           ) : (
             <>
               <Text style={local.photoHint}>Opțional: o poză cu spațiul din bucătărie unde va fi pus utilajul.</Text>
@@ -465,3 +453,5 @@ const local = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+export { ScreenErrorBoundary as ErrorBoundary } from '../../components/ScreenErrorBoundary';

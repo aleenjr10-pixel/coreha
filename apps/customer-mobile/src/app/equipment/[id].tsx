@@ -126,3 +126,5 @@ function EditForm({ item }: { item: EquipmentItem }) {
     </KeyboardAvoidingView>
   );
 }
+
+export { ScreenErrorBoundary as ErrorBoundary } from '../../components/ScreenErrorBoundary';

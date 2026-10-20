@@ -7,22 +7,26 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "backgroundColor": "#f5f7f3"
-    },
     "ios": {
       "bundleIdentifier": "com.coreha.customer",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "entitlements": {
+        "com.apple.developer.usernotifications.time-sensitive": true
+      }
     },
     "android": {
       "package": "com.coreha.customer",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#f5f7f3",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -35,7 +39,29 @@
           "photosPermission": "CoreHa uses your photos to show our experts where new equipment will be installed.",
           "cameraPermission": "CoreHa uses the camera to photograph the space where new equipment will be installed."
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#f5f7f3",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#286d53",
+          "defaultChannel": "critical-alerts"
+        }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b663ee21-ad47-4648-ba3c-e6509dedf9e3"
+      }
+    },
+    "owner": "aleenjr10s-team"
   }
 }

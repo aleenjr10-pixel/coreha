@@ -28,6 +28,9 @@ export type OpenAlert = {
   status: AlertStatus
   scheduled_for: string | null
   delivered_at: string
+  push_device_count: number
+  push_sent_at: string | null
+  push_error: string | null
 }
 
 export type EquipmentRow = {

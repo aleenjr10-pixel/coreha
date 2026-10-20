@@ -14,6 +14,13 @@ To change the database, edit `schema.sql` (keep every statement re-runnable: `if
 
 The files in [`archive/`](archive/) are the step-by-step migrations used before the single script. They are kept for history only; do not run them.
 
+## Automatic alerts and push notifications
+
+- Every morning at 06:00 UTC, `pg_cron` runs `public.generate_due_alerts()`. It creates an alert for each active machine due today or overdue, and re-sends the push for alerts still unanswered after a day. Admins can run the same check from the Equipment page ("Run due-date check").
+- Every new alert is pushed to the phones of the restaurant's members through the Expo push service, using `pg_net`. Delivery (phones reached, errors) is logged on the alert and shown in the admin.
+- The script enables `pg_net` and `pg_cron` itself. If it ever fails to, enable both under Database → Extensions in Supabase and run the script again.
+- Check the scheduled job with `select * from cron.job;` and its runs with `select * from cron.job_run_details order by start_time desc limit 10;`.
+
 ## Roles
 
 - `customer`: restaurant users (mobile app) who manage their restaurant, equipment, cleaning requests, and consultation requests

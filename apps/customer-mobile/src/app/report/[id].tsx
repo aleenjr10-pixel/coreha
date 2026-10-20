@@ -111,3 +111,5 @@ const local = StyleSheet.create({
   rowLabel: { color: colors.textMuted, fontSize: 13 },
   rowValue: { color: colors.text, fontSize: 13, fontWeight: '600', flexShrink: 1, textAlign: 'right' },
 });
+
+export { ScreenErrorBoundary as ErrorBoundary } from '../../components/ScreenErrorBoundary';
