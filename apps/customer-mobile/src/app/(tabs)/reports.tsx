@@ -37,7 +37,7 @@ export default function ReportsScreen() {
 
       {reports.data && reports.data.length === 0 ? (
         <EmptyState
-          icon={<FileSearch size={21} color={colors.green} />}
+          icon={<FileSearch size={21} color={colors.accent} />}
           title="No analyses yet"
           body="After you request a consultation, we collect supplier offers and publish a clear comparison here."
         />

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react-native';
-import { colors } from '../lib/theme';
+import { colors, fonts } from '../lib/theme';
 
 export type SelectOption = { value: string; label: string };
 
@@ -39,7 +39,7 @@ export function Select({
         <Text style={[styles.fieldText, !selected && styles.placeholder]} numberOfLines={1}>
           {selected?.label ?? placeholder}
         </Text>
-        <Chevron size={18} color={open ? colors.green : colors.textFaint} />
+        <Chevron size={18} color={open ? colors.accent : colors.textFaint} />
       </Pressable>
 
       {open ? (
@@ -63,7 +63,7 @@ export function Select({
                 accessibilityState={{ selected: isSelected }}
               >
                 <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>{option.label}</Text>
-                {isSelected ? <Check size={16} color={colors.green} /> : null}
+                {isSelected ? <Check size={16} color={colors.accent} /> : null}
               </Pressable>
             );
           })}
@@ -76,7 +76,7 @@ export function Select({
 const styles = StyleSheet.create({
   field: {
     minHeight: 48,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.inputBorder,
     backgroundColor: colors.inputBackground,
@@ -86,20 +86,20 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   fieldOpen: {
-    borderColor: colors.green,
+    borderColor: colors.accent,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
     backgroundColor: colors.surface,
   },
   fieldDisabled: { opacity: 0.5 },
-  fieldText: { flex: 1, fontSize: 15, color: colors.text },
+  fieldText: { flex: 1, fontFamily: fonts.regular, fontSize: 15, color: colors.text },
   placeholder: { color: colors.textFaint },
   list: {
     borderWidth: 1,
     borderTopWidth: 0,
-    borderColor: colors.green,
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
+    borderColor: colors.accent,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
     backgroundColor: colors.surface,
     overflow: 'hidden',
   },
@@ -111,11 +111,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f3f0',
+    borderBottomColor: colors.border,
   },
   optionLast: { borderBottomWidth: 0 },
-  optionSelected: { backgroundColor: colors.greenSoft },
-  optionPressed: { backgroundColor: '#f3f7f2' },
-  optionText: { flex: 1, fontSize: 14, color: colors.text },
-  optionTextSelected: { color: colors.green, fontWeight: '700' },
+  optionSelected: { backgroundColor: colors.accentSoft },
+  optionPressed: { backgroundColor: colors.surfaceRaised },
+  optionText: { flex: 1, fontFamily: fonts.regular, fontSize: 14, color: colors.text },
+  optionTextSelected: { color: colors.accent, fontFamily: fonts.bold },
 });

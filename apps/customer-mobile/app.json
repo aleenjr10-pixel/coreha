@@ -6,7 +6,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "ios": {
       "bundleIdentifier": "com.coreha.customer",
       "supportsTablet": true,
@@ -18,7 +18,7 @@
       "package": "com.coreha.customer",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "backgroundColor": "#f5f7f3",
+        "backgroundColor": "#17191d",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -43,7 +43,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#f5f7f3",
+          "backgroundColor": "#17191d",
           "image": "./assets/splash-icon.png",
           "imageWidth": 160
         }
@@ -51,7 +51,7 @@
       [
         "expo-notifications",
         {
-          "color": "#286d53",
+          "color": "#1ccfd9",
           "defaultChannel": "critical-alerts"
         }
       ]

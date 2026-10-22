@@ -78,6 +78,17 @@ create table if not exists public.profiles (
   updated_at timestamptz not null default now()
 );
 
+-- The only account that can ever be an administrator. Change it here and nowhere else.
+create or replace function public.admin_email()
+returns text
+language sql
+immutable
+as $$
+  select 'admin@coreha.ro'::text;
+$$;
+
+-- Admin = the signed-in auth user whose own login email is admin_email() AND whose profile
+-- has the admin role. The email comes from auth.users, which users cannot edit themselves.
 create or replace function public.is_admin()
 returns boolean
 language sql
@@ -88,8 +99,10 @@ as $$
   select exists (
     select 1
     from public.profiles p
+    join auth.users u on u.id = p.id
     where p.id = auth.uid()
       and p.role = 'admin'
+      and lower(u.email) = public.admin_email()
   );
 $$;
 
@@ -119,15 +132,25 @@ create trigger on_auth_user_created
 after insert on auth.users
 for each row execute procedure public.handle_new_user();
 
--- Users may edit their own profile, but only admins (or the SQL editor) can change roles.
+-- Users may edit their own name and phone. Roles and the profile email are not theirs to
+-- change: the email mirrors the login and decides who can be the administrator.
 create or replace function public.guard_profile_update()
 returns trigger
 language plpgsql
 set search_path = public
 as $$
 begin
-  if auth.uid() is not null and not public.is_admin() and new.role is distinct from old.role then
-    raise exception 'Only CoreHa administrators can change roles';
+  if auth.uid() is not null and not public.is_admin() then
+    if new.role is distinct from old.role then
+      raise exception 'Only CoreHa administrators can change roles';
+    end if;
+    if new.email is distinct from old.email then
+      raise exception 'The profile email follows the login email and cannot be changed here';
+    end if;
+  end if;
+
+  if new.role = 'admin' and lower(new.email) <> public.admin_email() then
+    raise exception 'Only % can be an administrator', public.admin_email();
   end if;
 
   return new;
@@ -446,6 +469,16 @@ create table if not exists public.notifications (
 
 -- Columns and constraints added after the first release ---------------------------------
 -- No-ops on a new database; bring older databases up to date.
+
+-- Single administrator: any other account that still has the admin role becomes a customer,
+-- then the database refuses the admin role for every email except admin_email().
+update public.profiles
+set role = 'customer'
+where role = 'admin' and lower(email) <> public.admin_email();
+
+alter table public.profiles drop constraint if exists profiles_single_admin_email;
+alter table public.profiles
+  add constraint profiles_single_admin_email check (role <> 'admin' or lower(email) = public.admin_email());
 
 alter table public.alert_events
   add column if not exists scheduled_for timestamptz,

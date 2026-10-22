@@ -16,7 +16,7 @@ import {
 import { onAlertReceived } from '../../lib/push';
 import { useRestaurant } from '../../lib/session';
 import { errorMessage, requireSupabase } from '../../lib/supabase';
-import { categoryLabels, colors, formatDate } from '../../lib/theme';
+import { categoryLabels, colors, formatDate, fonts } from '../../lib/theme';
 import { useQuery } from '../../lib/useQuery';
 
 function alertBadge(alert: OpenAlert): { label: string; tone: Tone } {
@@ -53,22 +53,11 @@ export default function EquipmentScreen() {
   if (equipment.loading) return <LoadingView />;
 
   const items = equipment.data ?? [];
-  const needsAttention = items.filter((item) => {
-    const tone = dueBadge(item).tone;
-    return item.alert_events[0]?.status === 'sent' || tone === 'danger' || tone === 'warning';
-  }).length;
 
   return (
     <Screen
       eyebrow={restaurant.legal_name.toUpperCase()}
       title="Equipment"
-      subtitle={
-        items.length === 0
-          ? 'Your critical kitchen equipment and its cleaning schedule.'
-          : needsAttention > 0
-            ? `${needsAttention} of ${items.length} ${items.length === 1 ? 'item needs' : 'items need'} attention soon. Most urgent first.`
-            : `All ${items.length} items are on schedule. Most urgent first.`
-      }
       refreshing={equipment.refreshing}
       onRefresh={equipment.refresh}
     >
@@ -76,7 +65,7 @@ export default function EquipmentScreen() {
 
       {equipment.data && items.length === 0 ? (
         <EmptyState
-          icon={<ClipboardList size={21} color={colors.green} />}
+          icon={<ClipboardList size={21} color={colors.accent} />}
           title="No equipment yet"
           body="Our team adds your equipment after the on-site assessment. It will show up here with its cleaning schedule."
         />
@@ -129,7 +118,7 @@ function EquipmentCard({ item, onChanged }: { item: EquipmentWithAlerts; onChang
   }
 
   return (
-    <Card style={urgent ? { borderColor: '#e9c9c3' } : undefined}>
+    <Card style={urgent ? { borderColor: colors.dangerBorder } : undefined}>
       <View style={styles.rowBetween}>
         <View style={local.titleRow}>
           {urgent ? <AlertTriangle size={18} color={colors.danger} /> : null}
@@ -166,7 +155,7 @@ function EquipmentCard({ item, onChanged }: { item: EquipmentWithAlerts; onChang
               label={openAlert?.status === 'scheduled' ? 'Change date' : 'Request cleaning'}
               onPress={() => setPicking(true)}
               disabled={busy}
-              icon={<Sparkles size={16} color="#ffffff" />}
+              icon={<Sparkles size={16} color={colors.onAccent} />}
             />
           </View>
           <Pressable
@@ -176,7 +165,7 @@ function EquipmentCard({ item, onChanged }: { item: EquipmentWithAlerts; onChang
             accessibilityRole="button"
             accessibilityLabel={`Edit ${item.label}`}
           >
-            <Pencil size={18} color={colors.green} />
+            <Pencil size={18} color={colors.accent} />
           </Pressable>
         </View>
       )}
@@ -188,12 +177,12 @@ function EquipmentCard({ item, onChanged }: { item: EquipmentWithAlerts; onChang
 
 const local = StyleSheet.create({
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 },
-  alertMessage: { marginTop: 10, color: colors.danger, fontSize: 14, lineHeight: 20 },
+  alertMessage: { marginTop: 10, color: colors.danger, fontFamily: fonts.regular, fontSize: 14, lineHeight: 20 },
   actions: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
   iconButton: {
     width: 48,
     height: 48,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.surface,

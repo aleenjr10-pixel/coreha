@@ -21,21 +21,36 @@ The files in [`archive/`](archive/) are the step-by-step migrations used before 
 - The script enables `pg_net` and `pg_cron` itself. If it ever fails to, enable both under Database → Extensions in Supabase and run the script again.
 - Check the scheduled job with `select * from cron.job;` and its runs with `select * from cron.job_run_details order by start_time desc limit 10;`.
 
+## Auth emails (welcome and password reset)
+
+Both apps use 6-digit codes from email instead of links, so nothing depends on opening a link on the phone.
+
+1. **SMTP** (Authentication → Emails → SMTP Settings): host `smtp.gmail.com`, port `465`, username `admin@coreha.ro`, password = a Google app password, sender `noreply@coreha.ro` (an alias of admin@ with "Send mail as" enabled in Gmail), sender name `CoreHa`.
+2. **Confirm email** on (Authentication → Sign In / Providers → Email). Keep the email OTP length at 6.
+3. **Templates** (Authentication → Emails → Templates), paste the HTML from `email-templates/`:
+   - "Confirm sign up" → `confirm-signup.html`, subject `Bun venit la CoreHa – codul tău de confirmare`
+   - "Reset password" → `reset-password.html`, subject `Codul tău pentru resetarea parolei CoreHa`
+4. **Rate limits** (Authentication → Rate Limits): with custom SMTP, raise "emails sent per hour" to fit your sign-ups.
+
 ## Roles
 
 - `customer`: restaurant users (mobile app) who manage their restaurant, equipment, cleaning requests, and consultation requests
 - `admin`: CoreHa staff (admin website) who manage inventory, requests, suppliers, quote requests, and offer analysis
 
-Only admins can change roles. New sign-ups always get the `customer` role.
+There is exactly one possible administrator: **admin@coreha.ro** (set in `public.admin_email()`).
+The database refuses the admin role for any other email, admin rights also require that the
+login email in Supabase Auth is admin@coreha.ro, and users cannot change the email on their profile.
+New sign-ups always get the `customer` role. Running `schema.sql` turns any other admin into a customer.
 
-## First admin
+## The admin account
 
-Create a user in Supabase Auth, then run this in the SQL editor:
+1. In Supabase: Authentication → Users → **Add user** → `admin@coreha.ro`, with a strong password and "Auto confirm user" checked.
+2. In the SQL editor:
 
 ```sql
 update public.profiles
 set role = 'admin'
-where email = 'your-admin@email.com';
+where lower(email) = 'admin@coreha.ro';
 ```
 
 ## Notes

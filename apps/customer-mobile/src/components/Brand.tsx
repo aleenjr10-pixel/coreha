@@ -1,11 +1,11 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import { colors } from '../lib/theme';
+import { colors, fonts } from '../lib/theme';
 
 export function Brand() {
   return (
     <View style={styles.brandWrap}>
       <View style={styles.brandIcon}>
-        <ActivityIndicator size={18} color="white" />
+        <ActivityIndicator size={18} color={colors.onAccent} />
       </View>
       <Text style={styles.brandText}>coreha.</Text>
     </View>
@@ -17,11 +17,11 @@ const styles = StyleSheet.create({
   brandIcon: {
     width: 32,
     height: 32,
-    borderRadius: 10,
-    backgroundColor: colors.green,
+    borderRadius: 12,
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
   },
-  brandText: { fontSize: 26, fontWeight: '700', color: colors.textStrong, letterSpacing: -0.7 },
+  brandText: { fontSize: 26, fontFamily: fonts.bold, color: colors.textStrong, letterSpacing: -0.7 },
 });

@@ -2,7 +2,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Card, ErrorText, LoadingView, SectionTitle, styles } from '../../components/ui';
 import { requireSupabase } from '../../lib/supabase';
-import { colors, formatDate, formatMoney } from '../../lib/theme';
+import { colors, formatDate, formatMoney, fonts } from '../../lib/theme';
 import type { ComparisonReport, SupplierOffer } from '../../lib/types';
 import { useQuery } from '../../lib/useQuery';
 
@@ -33,7 +33,7 @@ export default function ReportScreen() {
       {data ? (
         <>
           <Text style={styles.eyebrow}>PUBLISHED {formatDate(data.published_at).toUpperCase()}</Text>
-          <Text style={[styles.title, { fontSize: 24 }]}>{data.supplier_quote_requests?.technical_specifications ?? 'Equipment analysis'}</Text>
+          <Text style={[styles.title, { fontFamily: fonts.regular, fontSize: 24 }]}>{data.supplier_quote_requests?.technical_specifications ?? 'Equipment analysis'}</Text>
 
           <Card>
             <Text style={styles.fieldLabel}>SUMMARY</Text>
@@ -83,7 +83,7 @@ function OfferCard({ offer }: { offer: SupplierOffer }) {
 
       {offer.advantages ? (
         <>
-          <Text style={[styles.fieldLabel, { color: colors.green }]}>ADVANTAGES</Text>
+          <Text style={[styles.fieldLabel, { color: colors.accent }]}>ADVANTAGES</Text>
           <Text style={local.body}>{offer.advantages}</Text>
         </>
       ) : null}
@@ -98,18 +98,18 @@ function OfferCard({ offer }: { offer: SupplierOffer }) {
 }
 
 const local = StyleSheet.create({
-  body: { color: colors.text, fontSize: 14, lineHeight: 21 },
-  table: { marginTop: 12, borderTopWidth: 1, borderTopColor: '#edf0ec' },
+  body: { color: colors.text, fontFamily: fonts.regular, fontSize: 14, lineHeight: 21 },
+  table: { marginTop: 12, borderTopWidth: 1, borderTopColor: colors.border },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 12,
     paddingVertical: 9,
     borderBottomWidth: 1,
-    borderBottomColor: '#edf0ec',
+    borderBottomColor: colors.border,
   },
-  rowLabel: { color: colors.textMuted, fontSize: 13 },
-  rowValue: { color: colors.text, fontSize: 13, fontWeight: '600', flexShrink: 1, textAlign: 'right' },
+  rowLabel: { color: colors.textMuted, fontFamily: fonts.regular, fontSize: 13 },
+  rowValue: { color: colors.text, fontSize: 13, fontFamily: fonts.semibold, flexShrink: 1, textAlign: 'right' },
 });
 
 export { ScreenErrorBoundary as ErrorBoundary } from '../../components/ScreenErrorBoundary';

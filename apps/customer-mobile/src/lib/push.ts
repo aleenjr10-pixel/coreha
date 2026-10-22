@@ -51,7 +51,6 @@ async function ensureCriticalChannel(module: NotificationsModule) {
       name: 'Critical maintenance alerts',
       description: 'Equipment that needs maintenance now.',
       importance: module.AndroidImportance.MAX,
-      sound: 'default',
       enableVibrate: true,
       vibrationPattern: [0, 600, 300, 600, 300, 600],
       lockscreenVisibility: module.AndroidNotificationVisibility.PUBLIC,

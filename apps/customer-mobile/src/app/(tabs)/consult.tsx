@@ -7,7 +7,7 @@ import { consultCategories, findCategory, findType, supplyLabels } from '../../l
 import { photosAvailable, pickPhoto as pickPhotoFrom, readPhotoBytes, type Photo } from '../../lib/photos';
 import { useRestaurant } from '../../lib/session';
 import { errorMessage, requireSupabase } from '../../lib/supabase';
-import { colors, formatDate } from '../../lib/theme';
+import { colors, formatDate, fonts } from '../../lib/theme';
 import type { ConsultationLead, LeadStatus } from '../../lib/types';
 import { useQuery } from '../../lib/useQuery';
 
@@ -155,7 +155,7 @@ export default function ConsultScreen() {
           {submitted ? (
             <Card>
               <View style={local.successRow}>
-                <CheckCircle2 size={22} color={colors.green} />
+                <CheckCircle2 size={22} color={colors.accent} />
                 <Text style={local.successText}>{SUCCESS_MESSAGE}</Text>
               </View>
               <Button label="Trimite o nouă cerere" variant="secondary" onPress={() => setSubmitted(false)} />
@@ -184,7 +184,7 @@ export default function ConsultScreen() {
                 accessibilityLabel="Adaugă alt echipament"
               >
                 <View style={local.addIcon}>
-                  <Plus size={18} color="#ffffff" />
+                  <Plus size={18} color={colors.onAccent} />
                 </View>
                 <Text style={local.addText}>Adaugă alt echipament</Text>
               </Pressable>
@@ -229,7 +229,7 @@ export default function ConsultScreen() {
           accessibilityLabel={`Sună un expert CoreHa la ${expertPhone}`}
           hitSlop={8}
         >
-          <Phone size={26} color="#ffffff" />
+          <Phone size={26} color={colors.onAccent} />
         </Pressable>
       ) : null}
     </View>
@@ -356,7 +356,7 @@ function ItemForm({
                 accessibilityRole="button"
                 accessibilityLabel="Șterge poza"
               >
-                <X size={16} color="#ffffff" />
+                <X size={16} color={colors.onAccent} />
               </Pressable>
             </View>
           ) : !photosAvailable() ? (
@@ -366,11 +366,11 @@ function ItemForm({
               <Text style={local.photoHint}>Opțional: o poză cu spațiul din bucătărie unde va fi pus utilajul.</Text>
               <View style={local.photoButtons}>
                 <Pressable style={local.photoButton} onPress={() => pickPhoto('camera')} disabled={disabled} accessibilityRole="button">
-                  <Camera size={17} color={colors.green} />
+                  <Camera size={17} color={colors.accent} />
                   <Text style={local.photoButtonText}>Fă o poză</Text>
                 </Pressable>
                 <Pressable style={local.photoButton} onPress={() => pickPhoto('library')} disabled={disabled} accessibilityRole="button">
-                  <ImagePlus size={17} color={colors.green} />
+                  <ImagePlus size={17} color={colors.accent} />
                   <Text style={local.photoButtonText}>Din galerie</Text>
                 </Pressable>
               </View>
@@ -390,25 +390,25 @@ const local = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: colors.green,
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#1a2b22',
+    shadowColor: '#000',
     shadowOpacity: 0.25,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 6 },
     elevation: 6,
   },
   successRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  successText: { flex: 1, color: '#365342', fontSize: 15, fontWeight: '600', lineHeight: 22 },
-  itemHeading: { color: colors.text, fontSize: 15, fontWeight: '700' },
+  successText: { flex: 1, color: colors.accentStrong, fontSize: 15, fontFamily: fonts.semibold, lineHeight: 22 },
+  itemHeading: { color: colors.text, fontSize: 15, fontFamily: fonts.bold },
   addButton: {
     marginTop: 14,
     minHeight: 52,
     borderRadius: 12,
     borderWidth: 1,
     borderStyle: 'dashed',
-    borderColor: colors.green,
+    borderColor: colors.accent,
     backgroundColor: colors.surface,
     flexDirection: 'row',
     alignItems: 'center',
@@ -418,18 +418,18 @@ const local = StyleSheet.create({
   addIcon: {
     width: 28,
     height: 28,
-    borderRadius: 14,
-    backgroundColor: colors.green,
+    borderRadius: 16,
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  addText: { color: colors.green, fontSize: 14, fontWeight: '700' },
-  photoHint: { marginTop: 12, color: colors.textMuted, fontSize: 12, lineHeight: 17 },
+  addText: { color: colors.accent, fontSize: 14, fontFamily: fonts.bold },
+  photoHint: { marginTop: 12, color: colors.textMuted, fontFamily: fonts.regular, fontSize: 12, lineHeight: 17 },
   photoButtons: { flexDirection: 'row', gap: 10, marginTop: 8 },
   photoButton: {
     flex: 1,
     minHeight: 44,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.inputBorder,
     backgroundColor: colors.surface,
@@ -438,8 +438,8 @@ const local = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
   },
-  photoButtonText: { color: colors.green, fontSize: 13, fontWeight: '600' },
-  photoWrap: { marginTop: 12, borderRadius: 10, overflow: 'hidden' },
+  photoButtonText: { color: colors.accent, fontSize: 13, fontFamily: fonts.semibold },
+  photoWrap: { marginTop: 12, borderRadius: 12, overflow: 'hidden' },
   photo: { width: '100%', height: 180, backgroundColor: colors.inputBackground },
   photoRemove: {
     position: 'absolute',

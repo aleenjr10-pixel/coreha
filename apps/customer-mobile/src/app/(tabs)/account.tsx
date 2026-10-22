@@ -6,7 +6,7 @@ import { Badge, Button, Card, ErrorText, Screen, styles } from '../../components
 import { openNotificationSettings, registerForPush, type PushStatus } from '../../lib/push';
 import { useRestaurant, useSession } from '../../lib/session';
 import { errorMessage } from '../../lib/supabase';
-import { colors } from '../../lib/theme';
+import { colors, fonts } from '../../lib/theme';
 
 export default function AccountScreen() {
   const restaurant = useRestaurant();
@@ -62,19 +62,19 @@ export default function AccountScreen() {
           style={{
             width: 40,
             height: 40,
-            borderRadius: 8,
-            backgroundColor: colors.greenSoft,
+            borderRadius: 12,
+            backgroundColor: colors.accentSoft,
             alignItems: 'center',
             justifyContent: 'center',
             marginBottom: 6,
           }}
         >
-          <Building2 size={21} color={colors.green} />
+          <Building2 size={21} color={colors.accent} />
         </View>
         {fields.map(([label, value], index) => (
-          <View key={label} style={index > 0 ? { borderTopWidth: 1, borderTopColor: '#edf0ec', marginTop: 14 } : undefined}>
+          <View key={label} style={index > 0 ? { borderTopWidth: 1, borderTopColor: colors.border, marginTop: 14 } : undefined}>
             <Text style={styles.fieldLabel}>{label}</Text>
-            <Text style={{ color: '#46544a', fontSize: 14 }}>{value}</Text>
+            <Text style={{ color: colors.body, fontFamily: fonts.regular, fontSize: 14 }}>{value}</Text>
           </View>
         ))}
       </Card>
@@ -82,7 +82,7 @@ export default function AccountScreen() {
       <Card>
         <View style={styles.rowBetween}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 1 }}>
-            <BellRing size={20} color={colors.green} />
+            <BellRing size={20} color={colors.accent} />
             <Text style={styles.itemTitle}>Maintenance alerts</Text>
           </View>
           {pushStatus ? <Badge label={pushCopy[pushStatus].badge} tone={pushCopy[pushStatus].tone} /> : null}
@@ -103,7 +103,7 @@ export default function AccountScreen() {
         variant="secondary"
         onPress={handleSignOut}
         loading={signingOut}
-        icon={<LogOut size={16} color={colors.green} />}
+        icon={<LogOut size={16} color={colors.accent} />}
       />
     </Screen>
   );

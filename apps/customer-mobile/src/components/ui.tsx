@@ -12,7 +12,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors } from '../lib/theme';
+import { colors, fonts, floating } from '../lib/theme';
 
 export function Screen({
   title,
@@ -35,7 +35,7 @@ export function Screen({
         contentContainerStyle={styles.screenContent}
         keyboardShouldPersistTaps="handled"
         refreshControl={
-          onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={colors.green} /> : undefined
+          onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={colors.accent} /> : undefined
         }
       >
         {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
@@ -63,6 +63,7 @@ export function Input(props: TextInputProps) {
   return (
     <TextInput
       placeholderTextColor={colors.textFaint}
+      keyboardAppearance="dark"
       {...props}
       style={[styles.input, props.multiline && styles.inputMultiline, props.style]}
     />
@@ -93,7 +94,7 @@ export function Button({
       accessibilityRole="button"
     >
       {loading ? (
-        <ActivityIndicator size="small" color={primary ? 'white' : colors.green} />
+        <ActivityIndicator size="small" color={primary ? colors.onAccent : colors.accent} />
       ) : (
         <>
           {icon}
@@ -119,8 +120,8 @@ export function Chip({ label, selected, onPress }: { label: string; selected: bo
 
 export function Badge({ label, tone = 'neutral' }: { label: string; tone?: 'neutral' | 'good' | 'warning' | 'danger' }) {
   const toneStyle = {
-    neutral: { backgroundColor: '#eef1ee', color: colors.textMuted },
-    good: { backgroundColor: colors.greenSoft, color: colors.green },
+    neutral: { backgroundColor: colors.neutralSoft, color: colors.textMuted },
+    good: { backgroundColor: colors.accentSoft, color: colors.accent },
     warning: { backgroundColor: colors.warningSoft, color: colors.warning },
     danger: { backgroundColor: colors.dangerSoft, color: colors.danger },
   }[tone];
@@ -148,7 +149,7 @@ export function ErrorText({ message }: { message: string | null }) {
 export function LoadingView() {
   return (
     <View style={styles.loading}>
-      <ActivityIndicator color={colors.green} />
+      <ActivityIndicator color={colors.accent} />
     </View>
   );
 }
@@ -156,33 +157,34 @@ export function LoadingView() {
 export const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
   screenContent: { flexGrow: 1, paddingHorizontal: 22, paddingTop: 26, paddingBottom: 42 },
-  eyebrow: { color: '#89938b', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
-  title: { marginTop: 8, color: colors.text, fontSize: 28, fontWeight: '700' },
-  subtitle: { marginTop: 6, color: colors.textMuted, fontSize: 14, lineHeight: 20 },
-  sectionTitle: { marginTop: 26, marginBottom: 10, color: '#38463c', fontSize: 16, fontWeight: '700' },
+  eyebrow: { color: colors.textFaint, fontSize: 11, fontFamily: fonts.bold, letterSpacing: 1 },
+  title: { marginTop: 8, color: colors.text, fontSize: 28, fontFamily: fonts.bold },
+  subtitle: { marginTop: 6, color: colors.textMuted, fontFamily: fonts.regular, fontSize: 14, lineHeight: 20 },
+  sectionTitle: { marginTop: 26, marginBottom: 10, color: colors.text, fontSize: 16, fontFamily: fonts.bold },
   card: {
     padding: 18,
     marginTop: 14,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 12,
+    borderRadius: 16,
     backgroundColor: colors.surface,
+    ...floating,
   },
-  fieldLabel: { fontSize: 10, fontWeight: '700', color: colors.label, letterSpacing: 1, marginBottom: 8, marginTop: 14 },
+  fieldLabel: { fontSize: 11, fontFamily: fonts.bold, color: colors.label, letterSpacing: 1, marginBottom: 8, marginTop: 14 },
   input: {
     minHeight: 48,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.inputBorder,
     backgroundColor: colors.inputBackground,
     paddingHorizontal: 14,
-    fontSize: 15,
+    fontFamily: fonts.regular, fontSize: 15,
     color: colors.text,
   },
   inputMultiline: { minHeight: 96, paddingTop: 12, textAlignVertical: 'top' },
   button: {
     minHeight: 48,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
@@ -190,11 +192,18 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginTop: 14,
   },
-  buttonPrimary: { backgroundColor: colors.green },
-  buttonSecondary: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.green },
+  buttonPrimary: {
+    backgroundColor: colors.accent,
+    shadowColor: colors.accent,
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+  buttonSecondary: { backgroundColor: colors.surfaceRaised, borderWidth: 1, borderColor: colors.accentBorder },
   buttonDisabled: { opacity: 0.6 },
-  buttonPrimaryText: { color: '#ffffff', fontSize: 15, fontWeight: '700' },
-  buttonSecondaryText: { color: colors.green, fontSize: 14, fontWeight: '600' },
+  buttonPrimaryText: { color: colors.onAccent, fontSize: 15, fontFamily: fonts.bold },
+  buttonSecondaryText: { color: colors.accent, fontSize: 14, fontFamily: fonts.semibold },
   chip: {
     paddingHorizontal: 14,
     paddingVertical: 9,
@@ -203,26 +212,26 @@ export const styles = StyleSheet.create({
     borderColor: colors.inputBorder,
     backgroundColor: colors.surface,
   },
-  chipSelected: { backgroundColor: colors.green, borderColor: colors.green },
-  chipText: { color: colors.textMuted, fontSize: 13, fontWeight: '600' },
-  chipTextSelected: { color: '#ffffff' },
+  chipSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
+  chipText: { color: colors.textMuted, fontSize: 13, fontFamily: fonts.semibold },
+  chipTextSelected: { color: colors.onAccent },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   badge: { alignSelf: 'flex-start', paddingHorizontal: 9, paddingVertical: 4, borderRadius: 6 },
-  badgeText: { fontSize: 11, fontWeight: '700' },
+  badgeText: { fontSize: 11, fontFamily: fonts.bold },
   empty: { alignItems: 'center', paddingVertical: 30 },
   emptyIcon: {
     width: 44,
     height: 44,
-    borderRadius: 10,
-    backgroundColor: colors.greenSoft,
+    borderRadius: 12,
+    backgroundColor: colors.accentSoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emptyTitle: { marginTop: 14, color: colors.text, fontSize: 15, fontWeight: '700' },
-  emptyBody: { marginTop: 6, color: colors.textMuted, fontSize: 13, lineHeight: 19, textAlign: 'center' },
-  errorText: { marginTop: 14, color: colors.danger, fontSize: 12, lineHeight: 18 },
+  emptyTitle: { marginTop: 14, color: colors.text, fontSize: 15, fontFamily: fonts.bold },
+  emptyBody: { marginTop: 6, color: colors.textMuted, fontFamily: fonts.regular, fontSize: 13, lineHeight: 19, textAlign: 'center' },
+  errorText: { marginTop: 14, color: colors.danger, fontFamily: fonts.regular, fontSize: 12, lineHeight: 18 },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  itemTitle: { color: colors.text, fontSize: 15, fontWeight: '700', flexShrink: 1 },
-  itemMeta: { marginTop: 4, color: colors.textMuted, fontSize: 12, lineHeight: 18 },
+  itemTitle: { color: colors.text, fontSize: 15, fontFamily: fonts.bold, flexShrink: 1 },
+  itemMeta: { marginTop: 4, color: colors.textMuted, fontFamily: fonts.regular, fontSize: 12, lineHeight: 18 },
 });

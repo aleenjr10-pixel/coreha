@@ -1,0 +1,54 @@
+<!--
+  Supabase → Authentication → Emails → Templates → "Confirm sign up"
+  Subject: Bun venit la CoreHa – codul tău de confirmare
+  Sent from noreply@coreha.ro once custom SMTP is configured.
+-->
+<!doctype html>
+<html lang="ro">
+  <body style="margin:0;padding:0;background:#17191d;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#17191d;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#20242a;border:1px solid #30363e;border-radius:16px;font-family:Inter,'Segoe UI',Roboto,Arial,sans-serif;">
+            <tr>
+              <td style="padding:28px 32px 8px;">
+                <span style="display:inline-block;width:34px;height:34px;border-radius:10px;background:#1ccfd9;vertical-align:middle;"></span>
+                <span style="margin-left:10px;color:#f3f6f8;font-size:22px;font-weight:800;vertical-align:middle;">coreha<span style="color:#1ccfd9;">.</span></span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:16px 32px 0;">
+                <h1 style="margin:0;color:#f3f6f8;font-size:24px;line-height:1.3;font-weight:800;">Bun venit la CoreHa!</h1>
+                <p style="margin:14px 0 0;color:#d6dce1;font-size:15px;line-height:1.6;">
+                  Contul restaurantului tău a fost creat. De acum primești alerte când echipamentele au nevoie de mentenanță,
+                  consultanță de la experții noștri și oferte comparate de la furnizori, totul într-un singur loc.
+                </p>
+                <p style="margin:14px 0 0;color:#d6dce1;font-size:15px;line-height:1.6;">
+                  Pentru a-ți activa contul, introdu acest cod în aplicația CoreHa:
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="padding:22px 32px;">
+                <div style="display:inline-block;padding:16px 28px;border:1px solid rgba(28,207,217,0.4);border-radius:12px;background:#17191d;color:#5fe3ea;font-size:32px;font-weight:700;letter-spacing:8px;font-family:'Cascadia Mono',Consolas,monospace;">{{ .Token }}</div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 32px 28px;">
+                <p style="margin:0;color:#a1aab3;font-size:13px;line-height:1.6;">
+                  Codul expiră în curând. Dacă nu ai creat tu un cont CoreHa cu adresa {{ .Email }}, poți ignora acest email.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:18px 32px;border-top:1px solid #30363e;color:#7d8790;font-size:12px;line-height:1.6;">
+                CoreHa · Mentenanță și consultanță pentru echipamente HoReCa · coreha.ro<br />
+                Acest mesaj a fost trimis automat. Te rugăm să nu răspunzi la el.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
